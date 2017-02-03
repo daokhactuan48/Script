@@ -45,14 +45,7 @@ if [ ! -f $modlog ];then
         exit 1;
 
 fi
-####################################
-#Process=`echo $modname | sed 's/[0-9]*//g'`
-#ps uxa | grep $Process | grep -v "grep\|check_app_log" > /dev/null
-#if [ $? -ne 0  ]; then
-#        echo "$Process is not running !!!!! Change your configure."
-#        exit 1
 
-#fi
 
 ##########################################################################
 #tail -n100000 $modlog | egrep "$_date1|$_date2|$_date3|$_now_date" | egrep -Ev "$_ignore" | egrep -wi "$_key" > /tmp/.$modname.log
@@ -60,18 +53,32 @@ tail -n10000 $modlog  | egrep -Ev "$_ignore" | egrep -wi "$_key" >> /tmp/.$modna
 mod_error_log=/tmp/.$modname.error.log
 if [! -f $mod_error_log ]
 then
-  touch mod_error_log
+  touch $mod_error_log
 fi
+#######Create file flag to store ###############
+mod_flag=/tmp/$modname.flag
+if [! -f $mod_error_log ]
+then
+  touch $mod_flad
+  echo "True" > $mod_flag
+fi
+
 _size=`ls -l /tmp/.$modname.log | awk '{print $5}'`
+_flag=`cat $mod_flag`
 
 if [ $_size -lt 1 ];then
    echo  "$modname.log Normal...."
    exit 0
 else
-   _lineerror=`head -n 1 /tmp/.$modname.log`
-   sed -i '1d' /tmp/.$modname.log
-   echo $_lineerror >> $mod_error_log
-   echo $_lineerror
-   exit 2
+   if [$_flag == "True"] 
+		echo "False" > $mod_flag
+		_lineerror=`head -n 1 /tmp/.$modname.log`
+		sed -i '1d' /tmp/.$modname.log	
+		echo $_lineerror >> $mod_error_log
+		echo $_lineerror
+		exit 2
+   else
+        echo "True" > $mod_flag
+		exit 0
+   fi
 fi
-
