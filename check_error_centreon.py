@@ -91,7 +91,15 @@ def get_all_mess(name_label):
       messages.extend(repond_id_message['messages'])
     return messages
 
-
+def move_mail(id_thread,name_label,name_label_readed):
+    id_name_label = get_id_label(name_label)
+    id_name_label_readed = get_id_label(name_label_readed)
+    request_body = {
+	    'removeLabelIds': id_name_label,
+		'addLabelIds': id_name_label_readed
+	}
+	service = get_service()
+    thread = service.users().threads().modify(userId="me",id=id_thread,body=request_body)
 	
 def Sum_all_mail(name_label):
     messages = get_id_all_mess(get_id_label(name_label));
@@ -222,34 +230,9 @@ def get_content_email(list_id,path,token,room):
 			
 if __name__ == '__main__':
     name_label = "1.6.TRS_Centreon-enginge"
-    number_message_new = 2
+    name_label_readed = "1.6.TRS_Centreon-enginge_READED"
+    number_message_new = 10
     path = "/root/gmailapi/mail/"
     list_id = get_list_id_message_new(name_label,number_message_new)
     for id in list_id:
-        if "IS WARNING" in get_subject(id['id']):
-            continue
-        else:
-            pathfile = get_content_mess (id['id'],path)
-            file = open(pathfile,"r")
-            for line in iter(file):
-                if "Notification Type" in line:
-                    continue
-                elif "Service" in line:
-                    substring = line.split(':')
-                    Service = substring[1]
-                elif "Host" in line:
-                    substring = line.split(':')
-                    Host = substring[1]
-                elif "Address" in line:
-                    substring = line.split(':')
-                    Address = substring[1]
-                elif "State" in line:
-                   substring = line.split(':')
-                   State = substring[1]
-                elif "Additional Info" in line:
-                   substring = line.split('Info :')
-                   Additional = substring[1]
-                else:
-                    continue
-            email_content = Email_content(Service,Host,Address,State,Additional)
-            print (email_content.get_AdditionalInfo())
+        move_mail(id["threadId"],name_label,name_label_readed)
